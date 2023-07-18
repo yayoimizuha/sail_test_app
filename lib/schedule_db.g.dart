@@ -8,9 +8,7 @@ class $ScheduleTableTable extends ScheduleTable
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-
   $ScheduleTableTable(this.attachedDatabase, [this._alias]);
-
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<BigInt> id = GeneratedColumn<BigInt>(
@@ -30,16 +28,25 @@ class $ScheduleTableTable extends ScheduleTable
   late final GeneratedColumn<int> period = GeneratedColumn<int>(
       'period', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
   @override
-  List<GeneratedColumn> get $columns => [id, date, period];
-
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _scheduleTypeMeta =
+      const VerificationMeta('scheduleType');
+  @override
+  late final GeneratedColumn<int> scheduleType = GeneratedColumn<int>(
+      'schedule_type', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, date, period, content, scheduleType];
   @override
   String get aliasedName => _alias ?? 'schedule_table';
-
   @override
   String get actualTableName => 'schedule_table';
-
   @override
   VerificationContext validateIntegrity(Insertable<ScheduleTableData> instance,
       {bool isInserting = false}) {
@@ -60,12 +67,25 @@ class $ScheduleTableTable extends ScheduleTable
     } else if (isInserting) {
       context.missing(_periodMeta);
     }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('schedule_type')) {
+      context.handle(
+          _scheduleTypeMeta,
+          scheduleType.isAcceptableOrUnknown(
+              data['schedule_type']!, _scheduleTypeMeta));
+    } else if (isInserting) {
+      context.missing(_scheduleTypeMeta);
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-
   @override
   ScheduleTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -76,6 +96,10 @@ class $ScheduleTableTable extends ScheduleTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       period: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}period'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      scheduleType: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}schedule_type'])!,
     );
   }
 
@@ -90,16 +114,22 @@ class ScheduleTableData extends DataClass
   final BigInt id;
   final DateTime date;
   final int period;
-
+  final String content;
+  final int scheduleType;
   const ScheduleTableData(
-      {required this.id, required this.date, required this.period});
-
+      {required this.id,
+      required this.date,
+      required this.period,
+      required this.content,
+      required this.scheduleType});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<BigInt>(id);
     map['date'] = Variable<DateTime>(date);
     map['period'] = Variable<int>(period);
+    map['content'] = Variable<String>(content);
+    map['schedule_type'] = Variable<int>(scheduleType);
     return map;
   }
 
@@ -108,6 +138,8 @@ class ScheduleTableData extends DataClass
       id: Value(id),
       date: Value(date),
       period: Value(period),
+      content: Value(content),
+      scheduleType: Value(scheduleType),
     );
   }
 
@@ -118,9 +150,10 @@ class ScheduleTableData extends DataClass
       id: serializer.fromJson<BigInt>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       period: serializer.fromJson<int>(json['period']),
+      content: serializer.fromJson<String>(json['content']),
+      scheduleType: serializer.fromJson<int>(json['scheduleType']),
     );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -128,74 +161,100 @@ class ScheduleTableData extends DataClass
       'id': serializer.toJson<BigInt>(id),
       'date': serializer.toJson<DateTime>(date),
       'period': serializer.toJson<int>(period),
+      'content': serializer.toJson<String>(content),
+      'scheduleType': serializer.toJson<int>(scheduleType),
     };
   }
 
-  ScheduleTableData copyWith({BigInt? id, DateTime? date, int? period}) =>
+  ScheduleTableData copyWith(
+          {BigInt? id,
+          DateTime? date,
+          int? period,
+          String? content,
+          int? scheduleType}) =>
       ScheduleTableData(
         id: id ?? this.id,
         date: date ?? this.date,
         period: period ?? this.period,
+        content: content ?? this.content,
+        scheduleType: scheduleType ?? this.scheduleType,
       );
-
   @override
   String toString() {
     return (StringBuffer('ScheduleTableData(')
           ..write('id: $id, ')
           ..write('date: $date, ')
-          ..write('period: $period')
+          ..write('period: $period, ')
+          ..write('content: $content, ')
+          ..write('scheduleType: $scheduleType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, date, period);
-
+  int get hashCode => Object.hash(id, date, period, content, scheduleType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ScheduleTableData &&
           other.id == this.id &&
           other.date == this.date &&
-          other.period == this.period);
+          other.period == this.period &&
+          other.content == this.content &&
+          other.scheduleType == this.scheduleType);
 }
 
 class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
   final Value<BigInt> id;
   final Value<DateTime> date;
   final Value<int> period;
-
+  final Value<String> content;
+  final Value<int> scheduleType;
   const ScheduleTableCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.period = const Value.absent(),
+    this.content = const Value.absent(),
+    this.scheduleType = const Value.absent(),
   });
-
   ScheduleTableCompanion.insert({
     this.id = const Value.absent(),
     required DateTime date,
     required int period,
+    required String content,
+    required int scheduleType,
   })  : date = Value(date),
-        period = Value(period);
-
+        period = Value(period),
+        content = Value(content),
+        scheduleType = Value(scheduleType);
   static Insertable<ScheduleTableData> custom({
     Expression<BigInt>? id,
     Expression<DateTime>? date,
     Expression<int>? period,
+    Expression<String>? content,
+    Expression<int>? scheduleType,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (period != null) 'period': period,
+      if (content != null) 'content': content,
+      if (scheduleType != null) 'schedule_type': scheduleType,
     });
   }
 
   ScheduleTableCompanion copyWith(
-      {Value<BigInt>? id, Value<DateTime>? date, Value<int>? period}) {
+      {Value<BigInt>? id,
+      Value<DateTime>? date,
+      Value<int>? period,
+      Value<String>? content,
+      Value<int>? scheduleType}) {
     return ScheduleTableCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
       period: period ?? this.period,
+      content: content ?? this.content,
+      scheduleType: scheduleType ?? this.scheduleType,
     );
   }
 
@@ -211,6 +270,12 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
     if (period.present) {
       map['period'] = Variable<int>(period.value);
     }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (scheduleType.present) {
+      map['schedule_type'] = Variable<int>(scheduleType.value);
+    }
     return map;
   }
 
@@ -219,7 +284,9 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
     return (StringBuffer('ScheduleTableCompanion(')
           ..write('id: $id, ')
           ..write('date: $date, ')
-          ..write('period: $period')
+          ..write('period: $period, ')
+          ..write('content: $content, ')
+          ..write('scheduleType: $scheduleType')
           ..write(')'))
         .toString();
   }
@@ -228,11 +295,9 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
 abstract class _$ScheduleDatabase extends GeneratedDatabase {
   _$ScheduleDatabase(QueryExecutor e) : super(e);
   late final $ScheduleTableTable scheduleTable = $ScheduleTableTable(this);
-
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
-
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [scheduleTable];
 }

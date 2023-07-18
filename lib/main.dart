@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/schedule.dart';
 import 'package:test_app/schedule_db.dart';
+import 'package:test_app/add_orig.dart';
 
 void main() {
   const String sysLoc = 'ja_JP';
@@ -26,14 +27,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Thursday'),
+      home: MyHomePage(title: 'Thursday', scheduleDatabase: scheduleDatabase),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage(
+      {super.key, required this.title, required this.scheduleDatabase});
+
   final String title;
+  final ScheduleDatabase scheduleDatabase;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -135,9 +139,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
-              const Text(
-                'You have pushed the button this many times:',
-              ),
               Text(
                 dateStr,
                 style: Theme.of(context).textTheme.headlineMedium,
@@ -147,8 +148,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: tomorrow,
-        tooltip: 'Incl',
+        onPressed: () => {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      SettingsPage(database: widget.scheduleDatabase)))
+        },
+        tooltip: 'Add event',
         child: const Icon(Icons.add),
       ),
     );
