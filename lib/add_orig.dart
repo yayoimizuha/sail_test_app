@@ -107,7 +107,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     '${_titleController.text}\n${_commentController.text}',
                     _date,
                     _period,
-                    2)
+                    2),
+                _titleController.clear(),
+                _commentController.clear(),
               },
               child: const Text(
                 '追加',
@@ -116,21 +118,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
-            Expanded(
-                child: StreamBuilder(
-                    stream: widget.database.watchEntries(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<ScheduleTableData>> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) => TextButton(
-                            onPressed: () => {},
-                            child: Text('${snapshot.data![index].date}')),
-                      );
-                    })),
           ],
         ),
       ),

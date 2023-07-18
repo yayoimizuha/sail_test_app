@@ -30,7 +30,7 @@ class ScheduleDatabase extends _$ScheduleDatabase {
   }
 
   Future<List<ScheduleTableData>> getAllEntries() {
-    return (select(scheduleTable)).get();
+    return select(scheduleTable).get();
   }
 
   Future<int> addSchedule(
