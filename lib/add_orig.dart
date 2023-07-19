@@ -12,7 +12,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  var _date = DateTime.now();
+  var _date =
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   var _notice = true;
   var _icon = const Icon(Icons.notifications_off_outlined);
   final TextEditingController _titleController = TextEditingController();
@@ -46,6 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   lastDate: DateTime(2100),
                 ).then((date) => setState(() {
                       if (date != null) {
+                        print(date);
                         _date = date;
                       }
                     }))
@@ -103,11 +105,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 )),
             ElevatedButton(
               onPressed: () => {
-                widget.database.addSchedule(
-                    '${_titleController.text}\n${_commentController.text}',
-                    _date,
-                    _period,
-                    2),
+                widget.database.addSchedule(_titleController.text,
+                    _commentController.text, _date, _period, 2, _notice),
                 _titleController.clear(),
                 _commentController.clear(),
               },

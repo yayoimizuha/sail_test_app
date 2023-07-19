@@ -76,6 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('$dateStr $weekStr'),
         actions: <Widget>[
           IconButton(
+            onPressed: () => {widget.scheduleDatabase.clearAll()},
+            icon: const Icon(Icons.delete_outline_sharp),
+            tooltip: 'clear database',
+          ),
+          IconButton(
             onPressed: () => {},
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',

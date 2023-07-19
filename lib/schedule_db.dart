@@ -13,9 +13,13 @@ class ScheduleTable extends Table {
 
   IntColumn get period => integer()();
 
+  TextColumn get title => text()();
+
   TextColumn get content => text()();
 
   IntColumn get scheduleType => integer()();
+
+  BoolColumn get isNotice => boolean()();
 }
 
 @DriftDatabase(tables: [ScheduleTable])
@@ -33,23 +37,36 @@ class ScheduleDatabase extends _$ScheduleDatabase {
     return select(scheduleTable).get();
   }
 
-  Future<int> addSchedule(
-      String content, DateTime date, int period, int scheduleType) {
+  Future<int> addSchedule(String title, String content, DateTime date,
+      int period, int scheduleType, bool isNotice) {
     return into(scheduleTable).insert(ScheduleTableCompanion(
+        title: Value(title),
         content: Value(content),
         date: Value(date),
         period: Value(period),
-        scheduleType: Value(scheduleType)));
+        scheduleType: Value(scheduleType),
+        isNotice: Value(isNotice)));
   }
 
-  Future<int> updateSchedule(
-      ScheduleTableData schedule, String content, DateTime date, int period) {
+  Future<int> clearAll() {
+    return delete(scheduleTable).go();
+  }
+
+  Future<int> deleteSchedule(ScheduleTableData schedule) {
+    return (delete(scheduleTable)..where((tbl) => tbl.id.equals(schedule.id)))
+        .go();
+  }
+
+  Future<int> updateSchedule(ScheduleTableData schedule, String title,
+      String content, DateTime date, int period, bool isNotice) {
     return (update(scheduleTable)..where((tbl) => tbl.id.equals(schedule.id)))
         .write(ScheduleTableCompanion(
+            title: Value(title),
             content: Value(content),
             date: Value(date),
             period: Value(period),
-            scheduleType: Value(schedule.scheduleType)));
+            scheduleType: Value(schedule.scheduleType),
+            isNotice: Value(isNotice)));
   }
 }
 

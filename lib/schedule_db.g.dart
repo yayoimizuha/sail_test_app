@@ -28,6 +28,11 @@ class $ScheduleTableTable extends ScheduleTable
   late final GeneratedColumn<int> period = GeneratedColumn<int>(
       'period', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _contentMeta =
       const VerificationMeta('content');
   @override
@@ -40,9 +45,21 @@ class $ScheduleTableTable extends ScheduleTable
   late final GeneratedColumn<int> scheduleType = GeneratedColumn<int>(
       'schedule_type', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _isNoticeMeta =
+      const VerificationMeta('isNotice');
+  @override
+  late final GeneratedColumn<bool> isNotice =
+      GeneratedColumn<bool>('is_notice', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: true,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("is_notice" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, date, period, content, scheduleType];
+      [id, date, period, title, content, scheduleType, isNotice];
   @override
   String get aliasedName => _alias ?? 'schedule_table';
   @override
@@ -67,6 +84,12 @@ class $ScheduleTableTable extends ScheduleTable
     } else if (isInserting) {
       context.missing(_periodMeta);
     }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
     if (data.containsKey('content')) {
       context.handle(_contentMeta,
           content.isAcceptableOrUnknown(data['content']!, _contentMeta));
@@ -80,6 +103,12 @@ class $ScheduleTableTable extends ScheduleTable
               data['schedule_type']!, _scheduleTypeMeta));
     } else if (isInserting) {
       context.missing(_scheduleTypeMeta);
+    }
+    if (data.containsKey('is_notice')) {
+      context.handle(_isNoticeMeta,
+          isNotice.isAcceptableOrUnknown(data['is_notice']!, _isNoticeMeta));
+    } else if (isInserting) {
+      context.missing(_isNoticeMeta);
     }
     return context;
   }
@@ -96,10 +125,14 @@ class $ScheduleTableTable extends ScheduleTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       period: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}period'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       content: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       scheduleType: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}schedule_type'])!,
+      isNotice: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_notice'])!,
     );
   }
 
@@ -114,22 +147,28 @@ class ScheduleTableData extends DataClass
   final BigInt id;
   final DateTime date;
   final int period;
+  final String title;
   final String content;
   final int scheduleType;
+  final bool isNotice;
   const ScheduleTableData(
       {required this.id,
       required this.date,
       required this.period,
+      required this.title,
       required this.content,
-      required this.scheduleType});
+      required this.scheduleType,
+      required this.isNotice});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<BigInt>(id);
     map['date'] = Variable<DateTime>(date);
     map['period'] = Variable<int>(period);
+    map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['schedule_type'] = Variable<int>(scheduleType);
+    map['is_notice'] = Variable<bool>(isNotice);
     return map;
   }
 
@@ -138,8 +177,10 @@ class ScheduleTableData extends DataClass
       id: Value(id),
       date: Value(date),
       period: Value(period),
+      title: Value(title),
       content: Value(content),
       scheduleType: Value(scheduleType),
+      isNotice: Value(isNotice),
     );
   }
 
@@ -150,8 +191,10 @@ class ScheduleTableData extends DataClass
       id: serializer.fromJson<BigInt>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       period: serializer.fromJson<int>(json['period']),
+      title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       scheduleType: serializer.fromJson<int>(json['scheduleType']),
+      isNotice: serializer.fromJson<bool>(json['isNotice']),
     );
   }
   @override
@@ -161,8 +204,10 @@ class ScheduleTableData extends DataClass
       'id': serializer.toJson<BigInt>(id),
       'date': serializer.toJson<DateTime>(date),
       'period': serializer.toJson<int>(period),
+      'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'scheduleType': serializer.toJson<int>(scheduleType),
+      'isNotice': serializer.toJson<bool>(isNotice),
     };
   }
 
@@ -170,14 +215,18 @@ class ScheduleTableData extends DataClass
           {BigInt? id,
           DateTime? date,
           int? period,
+          String? title,
           String? content,
-          int? scheduleType}) =>
+          int? scheduleType,
+          bool? isNotice}) =>
       ScheduleTableData(
         id: id ?? this.id,
         date: date ?? this.date,
         period: period ?? this.period,
+        title: title ?? this.title,
         content: content ?? this.content,
         scheduleType: scheduleType ?? this.scheduleType,
+        isNotice: isNotice ?? this.isNotice,
       );
   @override
   String toString() {
@@ -185,14 +234,17 @@ class ScheduleTableData extends DataClass
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('period: $period, ')
+          ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('scheduleType: $scheduleType')
+          ..write('scheduleType: $scheduleType, ')
+          ..write('isNotice: $isNotice')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, date, period, content, scheduleType);
+  int get hashCode =>
+      Object.hash(id, date, period, title, content, scheduleType, isNotice);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -200,46 +252,60 @@ class ScheduleTableData extends DataClass
           other.id == this.id &&
           other.date == this.date &&
           other.period == this.period &&
+          other.title == this.title &&
           other.content == this.content &&
-          other.scheduleType == this.scheduleType);
+          other.scheduleType == this.scheduleType &&
+          other.isNotice == this.isNotice);
 }
 
 class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
   final Value<BigInt> id;
   final Value<DateTime> date;
   final Value<int> period;
+  final Value<String> title;
   final Value<String> content;
   final Value<int> scheduleType;
+  final Value<bool> isNotice;
   const ScheduleTableCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.period = const Value.absent(),
+    this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.scheduleType = const Value.absent(),
+    this.isNotice = const Value.absent(),
   });
   ScheduleTableCompanion.insert({
     this.id = const Value.absent(),
     required DateTime date,
     required int period,
+    required String title,
     required String content,
     required int scheduleType,
+    required bool isNotice,
   })  : date = Value(date),
         period = Value(period),
+        title = Value(title),
         content = Value(content),
-        scheduleType = Value(scheduleType);
+        scheduleType = Value(scheduleType),
+        isNotice = Value(isNotice);
   static Insertable<ScheduleTableData> custom({
     Expression<BigInt>? id,
     Expression<DateTime>? date,
     Expression<int>? period,
+    Expression<String>? title,
     Expression<String>? content,
     Expression<int>? scheduleType,
+    Expression<bool>? isNotice,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (period != null) 'period': period,
+      if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (scheduleType != null) 'schedule_type': scheduleType,
+      if (isNotice != null) 'is_notice': isNotice,
     });
   }
 
@@ -247,14 +313,18 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
       {Value<BigInt>? id,
       Value<DateTime>? date,
       Value<int>? period,
+      Value<String>? title,
       Value<String>? content,
-      Value<int>? scheduleType}) {
+      Value<int>? scheduleType,
+      Value<bool>? isNotice}) {
     return ScheduleTableCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
       period: period ?? this.period,
+      title: title ?? this.title,
       content: content ?? this.content,
       scheduleType: scheduleType ?? this.scheduleType,
+      isNotice: isNotice ?? this.isNotice,
     );
   }
 
@@ -270,11 +340,17 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
     if (period.present) {
       map['period'] = Variable<int>(period.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
     if (content.present) {
       map['content'] = Variable<String>(content.value);
     }
     if (scheduleType.present) {
       map['schedule_type'] = Variable<int>(scheduleType.value);
+    }
+    if (isNotice.present) {
+      map['is_notice'] = Variable<bool>(isNotice.value);
     }
     return map;
   }
@@ -285,8 +361,10 @@ class ScheduleTableCompanion extends UpdateCompanion<ScheduleTableData> {
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('period: $period, ')
+          ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('scheduleType: $scheduleType')
+          ..write('scheduleType: $scheduleType, ')
+          ..write('isNotice: $isNotice')
           ..write(')'))
         .toString();
   }
